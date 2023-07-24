@@ -1,0 +1,354 @@
+---
+title: "Lab1 Analisis"
+author: "Juan Angel Carrera"
+date: "2023-07-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+df <- read.csv("./cancer.csv")
+```
+
+```{r}
+if (!"tidyverse" %in% installed.packages()) {
+  install.packages("tidyverse", depend = TRUE)
+}
+
+if (!"skimr" %in% installed.packages()) {
+  install.packages("skimr", depend = TRUE)
+}
+if (!"readr" %in% installed.packages()) {
+  install.packages("readr", depend = TRUE)
+}
+if (!"GGally" %in% installed.packages()) {
+  install.packages("GGally", depend = TRUE)
+}
+if (!"corrplot" %in% installed.packages()) {
+  install.packages("corrplot", depend = TRUE)
+}
+if (!"PerformanceAnalytics" %in% installed.packages()) {
+  install.packages("PerformanceAnalytics", depend = TRUE)
+}
+if (!"Hmisc" %in% installed.packages()) {
+  install.packages("Hmisc", depend = TRUE)
+}
+```
+
+```{r echo=FALSE}
+library(skimr)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(readr)
+options(scipen = 999)
+library(readxl)
+library(gmodels)
+library(Hmisc)
+library(ggthemes)
+library(GGally)
+library(corrplot)
+library(PerformanceAnalytics)
+# Para este ejemplo, supongamos que tu dataframe se llama df
+# si no es así, simplemente reemplaza df por el nombre de tu dataframe
+
+skim(df)
+```
+
+## Graficos Exploratorios
+
+### Cuantitativas Continuas
+
+```{r}
+# Histograma
+ggplot(df, aes(x = Age)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  theme_minimal() +
+  ggtitle("Histograma de la Edad")
+
+# Boxplot
+ggplot(df, aes(y = Age)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  theme_minimal() +
+  ggtitle("Boxplot de la Edad")
+```
+
+### Cuantitativas Discretas
+
+```{r}
+# Gráfico de barras
+df %>%
+  group_by(Number.of.sexual.partners) %>%
+  summarise(Count = n()) %>%
+  ggplot(aes(x = Number.of.sexual.partners, y = Count)) +
+  geom_bar(stat = "identity", fill = "darkgreen", color = "black") +
+  theme_minimal() +
+  ggtitle("Gráfico de Barras de Number.of.sexual.partners")
+```
+
+### Categoricas
+
+```{r}
+# Gráfico de barras
+df %>%
+  group_by(Smokes) %>%
+  summarise(Count = n()) %>%
+  ggplot(aes(x = Smokes, y = Count)) +
+  geom_bar(stat = "identity", fill = "orange", color = "black") +
+  theme_minimal() +
+  ggtitle("Gráfico de Barras de Smokes")
+
+# Diagrama de pastel
+df %>%
+  group_by(Smokes) %>%
+  summarise(Count = n()) %>%
+  ggplot(aes(x = "", y = Count, fill = Smokes)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  ggtitle("Diagrama de Pastel de Smokes")
+```
+
+### Analisis Dimitri
+
+```{r}
+patients <- read.csv("./cancer.csv")
+
+summary(patients)
+
+glimpse(patients)
+
+table(patients$Number.of.sexual.partners)
+
+table(patients$Age)
+
+hist(patients$Age)
+
+describe(patients)
+
+patients$First.sexual.intercourse <- as.integer(patients$First.sexual.intercourse)
+
+patients$Smokes..years. <- as.integer(patients$Smokes..years.)
+
+patients$Smokes..packs.year. <- as.integer(patients$Smokes..packs.year.)
+
+patients$Hormonal.Contraceptives..years. <- as.integer(patients$Hormonal.Contraceptives..years.)
+
+patients$IUD..years. <- as.integer(patients$IUD..years.)
+
+patients$STDs..Time.since.first.diagnosis <- as.integer(patients$STDs..Time.since.first.diagnosis)
+
+patients$STDs..Time.since.last.diagnosis <- as.integer(patients$STDs..Time.since.last.diagnosis)
+
+patients$Number.of.sexual.partners <- as.integer(patients$Number.of.sexual.partners)
+
+patients$Num.of.pregnancies <- as.integer(patients$Num.of.pregnancies)
+
+patients$STDs..number. <- as.integer(patients$STDs..number.)
+
+patients$STDs..Number.of.diagnosis <- as.integer(patients$STDs..Number.of.diagnosis)
+
+table(patients$Smokes)
+
+table(patients$Hormonal.Contraceptives)
+
+table(patients$IUD)
+
+table(patients$STDs)
+
+table(patients$STDs.condylomatosis)
+
+table(patients$STDs.cervical.condylomatosis)
+
+table(patients$STDs.vaginal.condylomatosis)
+
+table(patients$STDs.vulvo.perineal.condylomatosis)
+
+table(patients$STDs.syphilis)
+
+table(patients$STDs.pelvic.inflammatory.disease)
+
+table(patients$STDs.genital.herpes)
+
+table(patients$STDs.molluscum.contagiosum)
+
+table(patients$STDs.AIDS)
+
+table(patients$STDs.HIV)
+
+table(patients$STDs.Hepatitis.B)
+
+table(patients$STDs.HPV)
+
+table(patients$Dx.Cancer)
+
+table(patients$Dx.CIN)
+
+table(patients$Dx.HPV)
+
+table(patients$Dx)
+
+table(patients$Hinselmann)
+
+table(patients$Schiller)
+
+table(patients$Citology)
+
+table(patients$Biopsy)
+```
+
+## Correlacion De Variables
+
+```{r}
+# Asumiendo que tu dataframe se llama df
+
+# Variables numéricas
+df_num <- patients %>% select_if(is.numeric)
+
+# Variables categóricas
+df_cat <- patients %>% select_if(is.factor)
+
+# Calcula la matriz de correlación
+correlation_matrix <- cor(df_num, use = "complete.obs", method = "spearman")
+
+# Muestra la matriz de correlación
+print(correlation_matrix)
+
+
+# Primero, instala la biblioteca si no lo has hecho todavía
+# install.packages("corrplot")
+
+# Luego, carga la biblioteca
+library(corrplot)
+
+# Crea una copia de la matriz de correlación
+correlation_matrix_copy <- correlation_matrix
+
+# Reemplaza los valores donde la correlación es menor a 0.5 con NA
+correlation_matrix_copy[abs(correlation_matrix_copy) < 0.5] <- NA
+
+# Cambia las dimensiones del dispositivo gráfico
+par(pin = c(100, 100))
+
+
+# Utiliza la función corrplot
+corrplot(correlation_matrix,
+  method = "color",
+  addCoef.col = "black", # color de los coeficientes
+  number.cex = 0.5, # tamaño de los coeficientes
+  addCoefasPercent = TRUE, # Muestra los coeficientes como porcentaje
+  # Utiliza la matriz modificada para agregar los coeficientes
+  addCoef.matrix = correlation_matrix_copy
+)
+```
+
+## PCA
+
+Eliminacion de variables con demasiados NAs
+
+```{r}
+library(dplyr)
+
+new_df <- df %>%
+  select(-STDs..Time.since.first.diagnosis, -STDs..Time.since.last.diagnosis, -Dx.CIN)
+
+new_pat <- patients %>%
+  select(-STDs..Time.since.first.diagnosis, -STDs..Time.since.last.diagnosis, -Dx.CIN)
+
+# Variables numéricas
+df_num <- new_pat %>% select_if(is.numeric)
+
+# Variables categóricas
+df_cat <- new_pat %>% select_if(is.factor)
+
+str(df_num)
+df_num <- data.frame(df_num)
+
+# Revisa si hay algún NA en tus datos
+if (any(is.na(df_num))) {
+  df_num <- na.omit(df_num) # Esto eliminará todas las filas con algún valor NA.
+}
+```
+
+```{r}
+library(psych)
+library(FactoMineR)
+library(fpc)
+library(factoextra)
+library(corrplot)
+library(PCAmixdata)
+
+rcor <- cor(as.matrix(df_num), use = "pairwise.complete.obs")
+det(rcor)
+```
+
+El determinante de la matriz de correclacion es `r det(rcor)` como es cercano a 0 podemos decir que hay multicolinealidad
+
+### Analisis factorial
+
+```{r}
+KMO(as.matrix(df_num))
+cortest.bartlett(df_num)
+```
+
+```{r}
+cortest.bartlett(df_num[, -1])
+```
+
+El valor de p es de  \`r cortest.bartlett(df_num[,-1])\$p.value\` por lo que podemos decir que las variables no son independientes
+
+```{r}
+cor(df_num[, -1], use = "pairwise.complete.obs")
+```
+
+```{r}
+# Esta función normaliza los datos de una vez
+compPrinc <- prcomp(df_num, scale = T)
+compPrinc
+```
+
+```{r}
+summary(compPrinc)
+```
+
+```{r}
+compPrincPCA <- PCA(df_num, ncp = ncol(df_num[, -1]), scale.unit = T)
+```
+
+```{r}
+summary(compPrincPCA)
+```
+
+```{r}
+# Se obtiene el scree plot de las componentes principales.
+# Como se ve hacen falta 8 de las 10 componentes para explicar m?s del 80% de la variabilidad
+fviz_eig(compPrinc, addlabels = TRUE, ylim = c(0, 80))
+fviz_eig(compPrinc, addlabels = TRUE, choice = c("eigenvalue"), ylim = c(0, 3))
+fviz_pca_biplot(compPrinc, repel = F)
+```
+
+Se obtiene el scree plot de las componentes principales.
+
+Como se ve hacen falta 8 de las 10 componentes para explicar mas del 80% de la variabilidad
+
+```{r}
+# En la siguiente gráfica se ilustra la calidad de la representación de los componentes en las dos primeras dimensiones.
+fviz_pca_var(compPrinc,
+  col.var = "cos2",
+  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  repel = TRUE # Avoid text overlapping
+)
+```
+
+```{r}
+# Contribución de las variables a las 3 primeras dimensiones
+fviz_contrib(compPrinc, choice = "var", axes = 1, top = 10) # Dimensión 1
+fviz_contrib(compPrinc, choice = "var", axes = 2, top = 10) # Dimensión 2
+fviz_contrib(compPrinc, choice = "var", axes = 3, top = 10) # Dimensión 3
+fviz_contrib(compPrinc, choice = "var", axes = 4, top = 10) # Dimensión 3
+```
+
+```{r}
+var <- get_pca_var(compPrinc)
+corrplot(var$cos2, is.corr = F)
+```

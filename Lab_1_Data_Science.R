@@ -6,7 +6,7 @@ install.packages("Hmisc")
 library(readr)
 options(scipen = 999)
 library(dplyr)
-library(ggplot2) 
+library(ggplot2)
 library(readxl)
 library(gmodels)
 library(Hmisc)
@@ -15,7 +15,7 @@ library(GGally)
 library(corrplot)
 library(PerformanceAnalytics)
 
-patients <- read.csv("/Users/dimitribadanigasdaglis/Desktop/risk_factors_cervical_cancer.csv")
+patients <- read.csv("./cancer.csv")
 
 summary(patients)
 
@@ -99,6 +99,33 @@ table(patients$Citology)
 
 table(patients$Biopsy)
 
-#cor(patients$Age, patients$Smokes..packs.year.)
+# cor(patients$Age, patients$Smokes..packs.year.)
 
 
+# Variables numéricas
+df_num <- patients %>% select_if(is.numeric)
+
+# Variables categóricas
+df_cat <- patients %>% select_if(is.factor)
+
+sapply(df_num, sd)
+df_num <- df_num[sapply(df_num, function(x) sd(x, na.rm = TRUE) > 0)]
+
+
+correlation_matrix <- cor(df_num, use = "complete.obs", method = "spearman")
+print(correlation_matrix)
+
+# Crea una copia de la matriz de correlación
+correlation_matrix_copy <- correlation_matrix
+
+# Reemplaza los valores donde la correlación es menor a 0.5 con NA
+correlation_matrix_copy[abs(correlation_matrix_copy) < 0.5] <- NA
+
+corrplot(correlation_matrix,
+    method = "color",
+    addCoef.col = "black", # color de los coeficientes
+    number.cex = 0.7, # tamaño de los coeficientes
+    addCoefasPercent = TRUE, # Muestra los coeficientes como porcentaje
+    # Utiliza la matriz modificada para agregar los coeficientes
+    addCoef.matrix = correlation_matrix_copy
+)
