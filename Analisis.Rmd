@@ -2,7 +2,10 @@
 title: "Lab1 Analisis"
 author: "Juan Angel Carrera"
 date: "2023-07-21"
-output: html_document
+output:
+  html_document: default
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -33,6 +36,15 @@ if (!"PerformanceAnalytics" %in% installed.packages()) {
 if (!"Hmisc" %in% installed.packages()) {
   install.packages("Hmisc", depend = TRUE)
 }
+if (!"arulesViz" %in% installed.packages()) {
+  install.packages("arulesViz", depend = TRUE)
+}
+if (!"tweenr" %in% installed.packages()) {
+  install.packages("tweenr", depend = TRUE)
+}
+if (!"graphlayouts" %in% installed.packages()) {
+  install.packages("graphlayouts", depend = TRUE)
+}
 ```
 
 ```{r echo=FALSE}
@@ -55,59 +67,6 @@ library(PerformanceAnalytics)
 skim(df)
 ```
 
-## Graficos Exploratorios
-
-### Cuantitativas Continuas
-
-```{r}
-# Histograma
-ggplot(df, aes(x = Age)) +
-  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
-  theme_minimal() +
-  ggtitle("Histograma de la Edad")
-
-# Boxplot
-ggplot(df, aes(y = Age)) +
-  geom_boxplot(fill = "lightblue", color = "black") +
-  theme_minimal() +
-  ggtitle("Boxplot de la Edad")
-```
-
-### Cuantitativas Discretas
-
-```{r}
-# Gráfico de barras
-df %>%
-  group_by(Number.of.sexual.partners) %>%
-  summarise(Count = n()) %>%
-  ggplot(aes(x = Number.of.sexual.partners, y = Count)) +
-  geom_bar(stat = "identity", fill = "darkgreen", color = "black") +
-  theme_minimal() +
-  ggtitle("Gráfico de Barras de Number.of.sexual.partners")
-```
-
-### Categoricas
-
-```{r}
-# Gráfico de barras
-df %>%
-  group_by(Smokes) %>%
-  summarise(Count = n()) %>%
-  ggplot(aes(x = Smokes, y = Count)) +
-  geom_bar(stat = "identity", fill = "orange", color = "black") +
-  theme_minimal() +
-  ggtitle("Gráfico de Barras de Smokes")
-
-# Diagrama de pastel
-df %>%
-  group_by(Smokes) %>%
-  summarise(Count = n()) %>%
-  ggplot(aes(x = "", y = Count, fill = Smokes)) +
-  geom_bar(width = 1, stat = "identity") +
-  coord_polar("y", start = 0) +
-  theme_void() +
-  ggtitle("Diagrama de Pastel de Smokes")
-```
 
 ### Analisis Dimitri
 
@@ -196,10 +155,72 @@ table(patients$Citology)
 
 table(patients$Biopsy)
 ```
+```{r}
+skim(patients)
+```
+
+
+
+
+## Graficos Exploratorios
+
+### Cuantitativas Continuas
+
+```{r}
+# Histograma
+ggplot(df, aes(x = Age)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  theme_minimal() +
+  ggtitle("Histograma de la Edad")
+
+# Boxplot
+ggplot(df, aes(y = Age)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  theme_minimal() +
+  ggtitle("Boxplot de la Edad")
+```
+
+### Cuantitativas Discretas
+
+```{r}
+# Gráfico de barras
+# Filtrar los valores perdidos antes de graficar
+patients %>%
+  filter(!is.na(Number.of.sexual.partners)) %>%
+  group_by(Number.of.sexual.partners) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  ggplot(aes(x = Number.of.sexual.partners, y = Count)) +
+  geom_bar(stat = "identity", fill = "darkgreen", color = "black") +
+  theme_minimal() +
+  ggtitle("Gráfico de Barras de Number.of.sexual.partners")
+```
+
+### Categoricas
+
+```{r}
+# Gráfico de barras
+df %>%
+  group_by(Smokes) %>%
+  summarise(Count = n()) %>%
+  ggplot(aes(x = Smokes, y = Count)) +
+  geom_bar(stat = "identity", fill = "orange", color = "black") +
+  theme_minimal() +
+  ggtitle("Gráfico de Barras de Smokes")
+
+# Diagrama de pastel
+df %>%
+  group_by(Smokes) %>%
+  summarise(Count = n()) %>%
+  ggplot(aes(x = "", y = Count, fill = Smokes)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  ggtitle("Diagrama de Pastel de Smokes")
+```
 
 ## Correlacion De Variables
 
-```{r}
+```{r warning=FALSE}
 # Asumiendo que tu dataframe se llama df
 
 # Variables numéricas
@@ -241,6 +262,8 @@ corrplot(correlation_matrix,
   addCoef.matrix = correlation_matrix_copy
 )
 ```
+
+
 
 ## PCA
 
@@ -292,13 +315,13 @@ cortest.bartlett(df_num)
 ```
 
 ```{r}
-cortest.bartlett(df_num[, -1])
+cortest.bartlett(df_num[,-1])
 ```
 
-El valor de p es de  \`r cortest.bartlett(df_num[,-1])\$p.value\` por lo que podemos decir que las variables no son independientes
+El valor de p es de `r cortest.bartlett(df_num[,-1])$p.value` por lo que podemos decir que las variables no son independientes
 
 ```{r}
-cor(df_num[, -1], use = "pairwise.complete.obs")
+cor(df_num[,-1], use = "pairwise.complete.obs" )
 ```
 
 ```{r}
@@ -308,6 +331,7 @@ compPrinc
 ```
 
 ```{r}
+
 summary(compPrinc)
 ```
 
@@ -334,10 +358,11 @@ Como se ve hacen falta 8 de las 10 componentes para explicar mas del 80% de la v
 ```{r}
 # En la siguiente gráfica se ilustra la calidad de la representación de los componentes en las dos primeras dimensiones.
 fviz_pca_var(compPrinc,
-  col.var = "cos2",
-  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-  repel = TRUE # Avoid text overlapping
+    col.var = "cos2",
+    gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+    repel = TRUE # Avoid text overlapping
 )
+
 ```
 
 ```{r}
@@ -351,4 +376,8 @@ fviz_contrib(compPrinc, choice = "var", axes = 4, top = 10) # Dimensión 3
 ```{r}
 var <- get_pca_var(compPrinc)
 corrplot(var$cos2, is.corr = F)
+
+
 ```
+
+
