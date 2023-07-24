@@ -3,6 +3,11 @@ install.packages("GGally")
 install.packages("corrplot")
 install.packages("PerformanceAnalytics")
 install.packages("Hmisc")
+if(! "arules" %in% installed.packages()) install.packages("arules", depend = TRUE)
+if(! "arulesViz" %in% installed.packages()) install.packages("arulesViz", depend = TRUE)
+library(arules)
+library(dplyr)
+library(arulesViz)
 library(readr)
 options(scipen = 999)
 library(dplyr)
@@ -129,3 +134,13 @@ corrplot(correlation_matrix,
     # Utiliza la matriz modificada para agregar los coeficientes
     addCoef.matrix = correlation_matrix_copy
 )
+
+# Reglas de Asociación 
+
+reglas <- apriori(data = patients)
+
+reglas <- apriori(data = patientsparameter = list(support = 0.35,
+                                                  target = "frequent", 
+                                                  minlen=3, maxlen=4))
+
+inspect(sort(reglas))
