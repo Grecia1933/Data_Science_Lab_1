@@ -104,8 +104,6 @@ table(patients$Citology)
 
 table(patients$Biopsy)
 
-# cor(patients$Age, patients$Smokes..packs.year.)
-
 
 # Variables numéricas
 df_num <- patients %>% select_if(is.numeric)
